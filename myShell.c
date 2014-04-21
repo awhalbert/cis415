@@ -6,17 +6,23 @@
 
 enum { STDIN, STDOUT, STDERR };
 
-char usgPointer[] = "Correct usage: ./ozai integer\n";
+/* Here we define all our messages to make the write() calls simpler */
+char usageMsg[] = "Correct usage: ./ozai integer\n";
+char killMsg[] = "You cannot escape me... I am the Phoenix King!\n";
+char noKillMsg[] = "But, how? What--what did you do to me?!\n";
+/* c will be used to iterate over these strings in the write() calls */
+char *c;
 
 void handler (int signum) {
-	write( STDOUT, "Your process burns... I am the Phoenix King!\n", 46);
-	kill(getpid(), SIGKILL);
+    for (c = killMsg; *c; ++c) write( STDOUT, c, 1); 
+    kill(getpid(), SIGKILL);
 }
 
-int main (int argc, char *argv[]) {
+int main (int argc, char *argv[], char *argp[]) {
+    signal(SIGALRM, handler);
+    
     if (argc != 2) {
-        char *c;
-        for (c = usgPointer; *c; c++) {
+        for (c = usageMsg; *c; ++c) {
             write( STDOUT, c, 1);
         }
         kill(getpid(), SIGKILL);
@@ -27,7 +33,7 @@ int main (int argc, char *argv[]) {
     printf("Timeout: %d\n", timeout);
     int BUFSIZE = 1024;
     int cmd_len;
-    int c;
+    int i;
     char buffer[BUFSIZE];
     int status;
     while (1) {
@@ -35,31 +41,26 @@ int main (int argc, char *argv[]) {
 
         cmd_len = read ( STDIN, buffer, BUFSIZE );
         char cmd[cmd_len-1];
-        c = 0;
+        i = 0;
         // populate char array cmd with contents of buffer
-        for (c; c < cmd_len-1; ++c) {
-                cmd[c] = buffer[c];
+        for (i; i < cmd_len-1; ++i) {
+                cmd[i] = buffer[i];
         }
         cmd[cmd_len-1] = '\0';
 
         pid_t pid;
         pid = fork();
-        
-        if (!pid) {
-                char * argvx[] = { cmd, NULL };
-                char * argpx[] = {NULL};
-                write(1, cmd, cmd_len);
-                write(1, "\n", 1);
-                signal(SIGALRM, handler);
-                alarm(1);
-//                sleep(2);
-                execve(cmd, argvx, argpx);
-                // cancel alarm if exec fails
-                perror("exec failed\n");
-                alarm(0);
+        if (!pid){
+            alarm(0);
+            char * argvx[] = { cmd, NULL };
+            signal(SIGALRM, handler);
+            execve(cmd, argvx, argp);
         }
         else {
-            int n = wait(&status);
+            alarm(timeout);
+            int n = waitpid(pid, &status, 0);
+            alarm(0);
+            for (c = noKillMsg; *c; ++c) write( STDOUT, c, 1);
         }
     }
 }

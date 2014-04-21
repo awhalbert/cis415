@@ -20,6 +20,10 @@ void print ( char * c, char *msg ) {
 }
 
 void handler (int signum) {
+    /*
+     * Handles the signal sent by the parent process if the child times out
+     * by killing the child process after printing a spiteful message
+     */
     print(c, "You cannot escape me... I am the Phoenix King!\n");
     kill(childPid, SIGKILL);
 }
@@ -57,7 +61,6 @@ int main (int argc, char *argv[], char *argp[]) {
         if (!childPid){
             alarm(0);
             char * argvx[] = { cmd, NULL };
-            signal(SIGALRM, handler);
             int fail = execve(cmd, argvx, argp);
             if (fail) {           
                 print( c, "Command not found...\n" );
@@ -66,6 +69,7 @@ int main (int argc, char *argv[], char *argp[]) {
         }
         /* childPid holds the child's pid if we're in the parent */
         else {
+            signal(SIGALRM, handler);
             int sig = alarm(timeout);
             int n = waitpid(childPid, &status, 0);
 //            print( c, "But, how? What--what did you do to me?!\n" );

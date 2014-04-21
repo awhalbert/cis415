@@ -2,42 +2,46 @@
 #include <wait.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 enum { STDIN, STDOUT, STDERR };
-
-/* Here we define all our messages to make the write() calls simpler */
-char usageMsg[] = "Correct usage: ./ozai integer\n";
-char killMsg[] = "You cannot escape me... I am the Phoenix King!\n";
-char noKillMsg[] = "But, how? What--what did you do to me?!\n";
 /* c will be used to iterate over these strings in the write() calls */
 char *c;
+pid_t childPid;
+
+void print ( char * c, char *msg ) {
+    /*
+     * Prints the content of the character array
+     * 
+     * Arguments:
+     *  c, a character pointer used for iteration through msg
+     *  msg, a string to print
+     */
+    for (c = msg; *c; ++c) write( STDOUT, c, 1);
+}
 
 void handler (int signum) {
-    for (c = killMsg; *c; ++c) write( STDOUT, c, 1); 
-    kill(getpid(), SIGKILL);
+    print(c, "You cannot escape me... I am the Phoenix King!\n");
+    kill(childPid, SIGKILL);
 }
 
 int main (int argc, char *argv[], char *argp[]) {
     signal(SIGALRM, handler);
     
     if (argc != 2) {
-        for (c = usageMsg; *c; ++c) {
-            write( STDOUT, c, 1);
-        }
+        print( c, "Correct usage: ./ozai integer\n" );
         kill(getpid(), SIGKILL);
         //write ( STDOUT, "Correct usage: \n", 18);	
     }	
 	
     int timeout = atoi(argv[1]);
-    printf("Timeout: %d\n", timeout);
+    timeout = 1;
     int BUFSIZE = 1024;
     int cmd_len;
     int i;
     char buffer[BUFSIZE];
     int status;
     while (1) {
-        write ( STDOUT, "Fire Lord Ozai# ", 16 );
+        print( c, "Fire Lord Ozai# " );
 
         cmd_len = read ( STDIN, buffer, BUFSIZE );
         char cmd[cmd_len-1];
@@ -48,19 +52,24 @@ int main (int argc, char *argv[], char *argp[]) {
         }
         cmd[cmd_len-1] = '\0';
 
-        pid_t pid;
-        pid = fork();
-        if (!pid){
+        childPid = fork();
+        /* childPid is 0 if we're in the child */
+        if (!childPid){
             alarm(0);
             char * argvx[] = { cmd, NULL };
             signal(SIGALRM, handler);
-            execve(cmd, argvx, argp);
+            int fail = execve(cmd, argvx, argp);
+            if (fail) {           
+                print( c, "Command not found...\n" );
+                kill( getpid(), SIGKILL );
+            }
         }
+        /* childPid holds the child's pid if we're in the parent */
         else {
-            alarm(timeout);
-            int n = waitpid(pid, &status, 0);
+            int sig = alarm(timeout);
+            int n = waitpid(childPid, &status, 0);
+//            print( c, "But, how? What--what did you do to me?!\n" );
             alarm(0);
-            for (c = noKillMsg; *c; ++c) write( STDOUT, c, 1);
         }
     }
 }

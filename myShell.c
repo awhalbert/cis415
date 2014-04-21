@@ -55,6 +55,12 @@ int main (int argc, char *argv[], char *argp[]) {
                 cmd[i] = buffer[i];
         }
         cmd[cmd_len-1] = '\0';
+        
+        /* kill the shell if the user enters 'q' by itself */
+        if (cmd_len == 2 && cmd[0] == 'q') {
+            print ( c, "What... what did you do to me?!\n" );
+            kill(getpid(), SIGKILL);
+        }
 
         childPid = fork();
         /* childPid is 0 if we're in the child */
@@ -70,8 +76,9 @@ int main (int argc, char *argv[], char *argp[]) {
         /* childPid holds the child's pid if we're in the parent */
         else {
             signal(SIGALRM, handler);
-            int sig = alarm(timeout);
+            status = alarm(timeout);
             int n = waitpid(childPid, &status, 0);
+            // how do I get this to only execute when the child is not killed?
 //            print( c, "But, how? What--what did you do to me?!\n" );
             alarm(0);
         }

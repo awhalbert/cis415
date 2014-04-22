@@ -79,8 +79,10 @@ int main (int argc, char *argv[], char *argp[]) {
             signal(SIGALRM, handler);
             status = alarm(timeout);
             int n = waitpid(childPid, &status, 0);
-            // how do I get this to only execute when the child is not killed?
-//            print( c, "But, how? What--what did you do to me?!\n" );
+            if (WIFEXITED(status)) {
+				print( c,"But, how did you escape? ");
+				print( c, "What--what did you do to me?!\n" );
+			}
             alarm(0);
         }
     }

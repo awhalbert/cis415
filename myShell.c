@@ -2,10 +2,12 @@
 #include <wait.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 enum { STDIN, STDOUT, STDERR };
 /* c will be used to iterate over these strings in the write() calls */
 char *c;
+
 pid_t childPid;
 
 void print ( char * c, char *msg ) {
@@ -30,15 +32,14 @@ void handler (int signum) {
 
 int main (int argc, char *argv[], char *argp[]) {
     signal(SIGALRM, handler);
-    
-    if (argc != 2) {
+
+    if (argc != 2 || (argc == 2 && isalpha(*argv[1]))) {
         print( c, "Correct usage: ./ozai integer\n" );
         kill(getpid(), SIGKILL);
-        //write ( STDOUT, "Correct usage: \n", 18);	
-    }	
-	
+    }
+
     int timeout = atoi(argv[1]);
-    timeout = 1;
+//    timeout = 1;
     int BUFSIZE = 1024;
     int cmd_len;
     int i;
@@ -55,7 +56,7 @@ int main (int argc, char *argv[], char *argp[]) {
                 cmd[i] = buffer[i];
         }
         cmd[cmd_len-1] = '\0';
-        
+
         /* kill the shell if the user enters 'q' by itself */
         if (cmd_len == 2 && cmd[0] == 'q') {
             print ( c, "What... what did you do to me?!\n" );

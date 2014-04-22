@@ -9,6 +9,7 @@ enum { STDIN, STDOUT, STDERR };
 char *c;
 
 pid_t childPid;
+int BUFSIZE = 256;
 
 void print ( char * c, char *msg ) {
     /*
@@ -39,12 +40,12 @@ int main (int argc, char *argv[], char *argp[]) {
     }
 
     int timeout = atoi(argv[1]);
-//    timeout = 1;
-    int BUFSIZE = 1024;
     int cmd_len;
     int i;
     char buffer[BUFSIZE];
     int status;
+    signal(SIGALRM, handler);
+
     while (1) {
         print( c, "Fire Lord Ozai# " );
 
@@ -76,7 +77,6 @@ int main (int argc, char *argv[], char *argp[]) {
         }
         /* childPid holds the child's pid if we're in the parent */
         else {
-            signal(SIGALRM, handler);
             status = alarm(timeout);
             int n = waitpid(childPid, &status, 0);
             if (WIFEXITED(status)) {

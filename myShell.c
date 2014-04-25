@@ -81,7 +81,9 @@ int main (int argc, char *argv[], char *argp[]) {
             kill(getpid(), SIGKILL);
         }
         
+
         char cmd[] = "";
+        char * argv = "";	
         i = 0;
         // populate char array cmd with contents of buffer
         for (i; i < len_input-1; ++i) cmd[i] = buffer[i];

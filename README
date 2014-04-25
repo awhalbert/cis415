@@ -32,6 +32,8 @@ I estimate that I spent around 30 hours on this project. The level of effort req
 
 General comments:
 
+To use my shell, you need to enter the full path of the command, e.g. # /bin/ls
+
 My kernel is taking a ridiculously long time to compile, even though I enabled 2 cores for the VM and also entered $ export CONCURRENCY_LEVEL = 3. It’s already taken 6 hours, and it isn’t finished. So, unfortunately, instead of actually writing a test for my system call, I will have to simply explain what steps I took to implement the system call.
 
 I used http://arvindsraj.wordpress.com/2012/10/05/adding-hello-world-system-call-to-linux/ as a reference for installing my system call and I used http://linuxtweaking.blogspot.com/2010/05/how-to-compile-kernel-on-ubuntu-1004.html for help with compiling and installing the kernel.

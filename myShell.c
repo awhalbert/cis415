@@ -1,7 +1,13 @@
+/*
+ * Author: Aaron W. Halbert
+ * Prof. Kevin Butler
+ * CIS 415
+ * 24 April 2014
+ */
+
 #include <unistd.h>
 #include <wait.h>
 #include <signal.h>
-#include <stdlib.h>
 #include <ctype.h>
 
 enum { STDIN, STDOUT, STDERR };
@@ -9,7 +15,22 @@ enum { STDIN, STDOUT, STDERR };
 char *c;
 
 pid_t childPid;
+// chars are 4 bytes on most system, so this allows for 1024 bytes
 int BUFSIZE = 256;
+
+int atoi (char * string) {
+	/*
+	 * Returns an integer interpreted from a string.
+	 * Used http://www.geeksforgeeks.org/write-your-own-atoi/
+	 * to inform my method.
+	 */
+	int integer = 0;
+	int i = 0;
+	for (i; string[i] != '\0'; ++i) {
+		integer = 10 * integer + (string[i] - '0');
+	}
+	return integer;
+}
 
 void print ( char * c, char *msg ) {
     /*
@@ -38,38 +59,40 @@ int main (int argc, char *argv[], char *argp[]) {
         print( c, "Correct usage: ./ozai integer\n" );
         kill(getpid(), SIGKILL);
     }
-
     int timeout = atoi(argv[1]);
-    int cmd_len;
-    int i;
+    int len_input;
+    int i; // used for iteration
     char buffer[BUFSIZE];
-    int status;
-    signal(SIGALRM, handler);
+    int status; // used to hold result of alarm in parent after fork
+    signal(SIGALRM, handler); // connect alarm to handler
 
     while (1) {
         print( c, "Fire Lord Ozai# " );
-
-        cmd_len = read ( STDIN, buffer, BUFSIZE );
-        char cmd[cmd_len-1];
-        i = 0;
-        // populate char array cmd with contents of buffer
-        for (i; i < cmd_len-1; ++i) {
-                cmd[i] = buffer[i];
+		
+        len_input = read ( STDIN, buffer, BUFSIZE );
+        if (len_input == BUFSIZE) {
+			print( c, "Command too long!\n" );
+			continue;
         }
-        cmd[cmd_len-1] = '\0';
-
+        
         /* kill the shell if the user enters 'q' by itself */
-        if (cmd_len == 2 && cmd[0] == 'q') {
+        if (len_input == 2 && buffer[0] == 'q') {
             print ( c, "What... what did you do to me?!\n" );
             kill(getpid(), SIGKILL);
         }
-
+        
+        char cmd[] = "";
+        i = 0;
+        // populate char array cmd with contents of buffer
+        for (i; i < len_input-1; ++i) cmd[i] = buffer[i];
+        cmd[len_input-1] = '\0';
+        
         childPid = fork();
         /* childPid is 0 if we're in the child */
         if (!childPid){
             alarm(0);
-            char * argvx[] = { cmd, NULL };
-            int fail = execve(cmd, argvx, argp);
+            char * argv[] = {cmd, NULL};
+            int fail = execve(cmd, argv, argp);
             if (fail) {           
                 print( c, "Command not found...\n" );
                 kill( getpid(), SIGKILL );
@@ -78,7 +101,7 @@ int main (int argc, char *argv[], char *argp[]) {
         /* childPid holds the child's pid if we're in the parent */
         else {
             status = alarm(timeout);
-            int n = waitpid(childPid, &status, 0);
+            waitpid(childPid, &status, 0);
             if (WIFEXITED(status)) {
 				print( c,"But, how did you escape? ");
 				print( c, "What--what did you do to me?!\n" );

@@ -1,0 +1,8 @@
+Script started on Fri 25 Apr 2014 02:45:03 AM PDT
+]0;cis415@cis415-xubuntu1204-vbox: ~/Desktop/cis415cis415@cis415-xubuntu1204-vbox:~/Desktop/cis415$ uname -a
+Linux cis415-xubuntu1204-vbox 3.2.57awhalbert #1 SMP Thu Apr 24 21:14:15 PDT 2014 i686 i686 i386 GNU/Linux
+]0;cis415@cis415-xubuntu1204-vbox: ~/Desktop/cis415cis415@cis415-xubuntu1204-vbox:~/Desktop/cis415$ ./test
+System call returned -1
+]0;cis415@cis415-xubuntu1204-vbox: ~/Desktop/cis415cis415@cis415-xubuntu1204-vbox:~/Desktop/cis415$ exit
+
+Script done on Fri 25 Apr 2014 02:45:13 AM PDT

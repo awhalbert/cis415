@@ -1,0 +1,62 @@
+Name: Aaron Halbert
+
+NOTE: the source code for my system call is located near the bottom of this file, in the general comments section.
+
+Source files: myShell.c, Makefile
+
+Extra credit: The other signal besides SIGKILL that cannot be blocked is SIGSTOP. All signals terminate the program if left unhandled. There is information on signals in man signal(3).
+
+Compilation instructions: extract the files. In Terminal, navigate to the folder where the extracted files reside and enter the commands $ make clean and $ make
+
+Then run the program by executing $ ./ozai [integer]
+
+
+Overview of work accomplished:
+
+I wrote a shell using system calls and no C Standard Library functions, then wrote a makefile to compile this program. I wrote an atoi() function in place of the C Standard Library function. I learned a lot about system calls by reading man pages for read, write, alarm, wait, kill, exec, fork, and others. Additionally, to create a new system call, I modified entry_32.S, syscalls.h, and syscall_table_32.S, recompiled and installed this modified linux kernel. After doing that, I created a log using my system call that 
+
+
+Description of code and code layout:
+
+See my code for extra details on implementation, but here is the general idea. The main facet of the program is an endless while loop, i.e. while (1) {...}. Then inside this loop, I make a call to fork(), which returns the child’s pid if we are in the parent, and 0 if we are in the child. Using this information, I make separate cases for the child and the parent.
+
+In the child case, I print a prompt, which reads “Fire Lord Ozai# “. Then I make a call to read(), which returns the number of bytes read from STDIN. I use this number to determine how long the input is so I can properly pass the command into execve().
+
+In the parent case, I make a call to alarm(int), using the integer value passed into the program when the user originally executes ./ozai [integer]. Then I call wait(), which modifies an integer status. I then check this integer status to see if the child exited normally or if it was terminated by a signal. If the child exits normally, then I print a message of my villainous shell’s frustration, and then the alarm is canceled. If the child doesn’t exit normally, this means the process timed out. In this case, my handler is called (because I linked SIGALRM with my handler function earlier). In the handler, I kill the child using its pid, which I have stored in a global variable.
+
+
+Number of hours spent:
+
+I estimate that I spent around 30 hours on this project. The level of effort required seemed appropriate. Writing the shell wasn’t too difficult. However, getting the kernel to compile properly, etc. took way longer to figure out than did writing the shell. There was a lack of documentation for the flavor of Linux I had (Xubuntu 12), which I got off the slides by replacing 13S with 14S. I believe it is an image that a student from a previous term put together.
+
+
+General comments:
+
+My kernel is taking a ridiculously long time to compile, even though I enabled 2 cores for the VM and also entered $ export CONCURRENCY_LEVEL = 3. It’s already taken 6 hours, and it isn’t finished. So, unfortunately, instead of actually writing a test for my system call, I will have to simply explain what steps I took to implement the system call.
+
+I used http://arvindsraj.wordpress.com/2012/10/05/adding-hello-world-system-call-to-linux/ as a reference for installing my system call and I used http://linuxtweaking.blogspot.com/2010/05/how-to-compile-kernel-on-ubuntu-1004.html for help with compiling and installing the kernel.
+
+The kernel I modified is 3.2.57. I started by adding the line .long sys_hello to the file syscall_table_32.S in the directory /usr/src/linux-3.2.57/arch/x86/kernel. Then I added the lines #define __NR_helloworld 349 and #define NR_syscalls 350 to the file /usr/src/linux-3.2.57/arch/x86/include/asm/unistd.h. After this, I defined a macro in /usr/src/linux-3.2.57/arch/x86/include/asm/unistd_64.h as:
+
+#define __NR_helloworld                         312
+__SYSCALL(__NR_process_vm_writev, sys_process_vm_writev)
+
+This is where I made a mistake. I wrote __NR_process_vm_writev and sys_process_vm_write_v because this is what the previous macro looked like. However, it wasn’t until about 5 hours into compiling the kernel that I realized I made a mistake, and I should’ve written the following code:
+
+#define __NR_helloworld                         312
+__SYSCALL(__NR_helloworld, sys_helloworld)
+
+I believe this would have resulted in a successful implementation of a system call.
+
+Next, I added the following line to /usr/src/linux-3.2.57/arch/x86/include/asm/syscalls.h: asmlinkage long sys_helloworld(void);
+
+Finally, in /usr/src/linux-3.2.57, I created a folder called helloworld with a file inside named helloworld.h, defining the above function, as follows:
+
+#include <linux/kernel.h>
+
+asmlinkage long sys_hello(void) {
+	printk(“Hello world\n”);
+	return 0;
+}
+
+After all this was done, I compiled and installed the kernel, rebooted, and created a file, log.txt, which contains the output to the shell generated when I ran the small program test.c. Both of these files are included in the tarball.

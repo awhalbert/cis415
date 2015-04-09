@@ -1,0 +1,41 @@
+• Your name and your parter’s name if you work in a group of 2
+Development Team: Aaron Halbert and Johnny Povolny (primary author of this document)
+Project: The Halvolny Shell 
+
+• A list of submitted source ﬁles
+halvolnyShell.c
+utils.c
+utils.h
+tokenizer.c (open source)
+tokenizer.h (open source)
+Makefile
+
+• Extra credit answers (if any)
+Synchronous signal handling may be less efficient. Additionally, you must wait for the communication to take place
+before being able to continue with any other work.
+
+Library functions can be differentiated from system calls in that their man page number in parenthesis is 3, while system 
+calls have a man page number of 2.
+
+• Compilation instructions
+Navigate to folder with Makefile
+$ make clean
+$ make
+
+• Description of code and code layout
+halvolny.c is the main shell logic, at heart a program that loops, parsing input, forking, and fulfilling
+the commands in that input. utils.c contains all the helper functions called in the main program.
+
+• Overview of work accomplished, including who primarily wrote which parts of the code, if you
+are working in a group
+Our piping and redirection work perfectly, in harmony. Starting a process in the background works great. fg and bg
+both work, but may lead to unexpected behavior afterward in some edge cases. We did absolutely no individual coding. Every
+line of code you see was written and understood as a team in pair programming sessions... of hours and hours and hours ;).
+
+• General comments and anything that can help us grade your code
+In certain edge cases, our shell will begin reversing in what order it prints the prompt and the output of the executed
+command. We attempted to diagnose this issue with Amir in his office hours, unsuccessfully. It is quite the elusive bug.
+However, this bug can be hacked away with a sleep(1) called just before the end of our shell loop. You may comment this
+code out to see the bug.
+
+• Number of grace days you’re using, if any. (The best number is zero.)0

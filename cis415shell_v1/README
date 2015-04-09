@@ -8,7 +8,8 @@ Extra credit: The other signal besides SIGKILL that cannot be blocked is SIGSTOP
 
 Compilation instructions: extract the files. In Terminal, navigate to the folder where the extracted files reside and enter the commands $ make clean and $ make
 
-Then run the program by executing $ ./ozai [integer]
+Then run the program by executing $ ./ozai [integer, timeout in seconds]
+To use my shell, you need to enter the full path of the command, e.g. # /bin/ls
 
 
 Overview of work accomplished:
@@ -31,8 +32,6 @@ I estimate that I spent around 30 hours on this project. The level of effort req
 
 
 General comments:
-
-To use my shell, you need to enter the full path of the command, e.g. # /bin/ls
 
 My kernel is taking a ridiculously long time to compile, even though I enabled 2 cores for the VM and also entered $ export CONCURRENCY_LEVEL = 3. It’s already taken 6 hours, and it isn’t finished. So, unfortunately, instead of actually writing a test for my system call, I will have to simply explain what steps I took to implement the system call.
 
